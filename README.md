@@ -4,7 +4,13 @@ todo-term is a todo list utility for the commandline
 
 It uses git to manage synchronization but can, with a little bit of tweaking, be used without it.
 
-To get started create a remote repository you want to sync with, and run:
+To get started:
+
+- Download todo and put it where it suits you
+- Add todo to your PATH
+- Create a remote repository you want to sync with (at [bitbucket](https://bitbucket.org) they have free private repositories)
+
+Then run:
 
 ```bash
 todo -s
