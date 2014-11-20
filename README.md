@@ -4,7 +4,7 @@ todo-term is a todo list utility for the commandline
 
 It uses git to manage synchronization but can, with a little bit of tweaking, be used without it.
 
-To get started create a remote repository you want to synk with, and run:
+To get started create a remote repository you want to sync with, and run:
 
 ```bash
 todo -s
@@ -13,7 +13,7 @@ todo -s
 ## Available commands
 
 	h|help)   Print this help page
-	a|add)    Add an item
+	a|add)    Add an item (will enter interactive mode if no argument is given)
 	t|toggle) Toggle checked state of an item (will enter interactive mode if no argument is given)
 	d|delete) Delete an item (will enter interactive mode if no argument is given)
 	r|reset)  Reset todo list
