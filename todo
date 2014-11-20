@@ -1,0 +1,127 @@
+#!/bin/bash
+
+TODO_DIR="$HOME/.todo"
+TODO_FILE="$TODO_DIR/todo.txt"
+
+function check_todo_dir {
+	if [ ! -d "$TODO_DIR" ]; then
+		echo "Todo has not yet been setup, try running \"todo -s\"";
+		exit 1;
+	fi
+}
+
+function print_help {
+echo "Welcome to Todo!
+
+Usage:
+	h) Print this help page
+	a) Add item to todo list
+	r) Reset todo list
+	f) Fetch todo list from remote repository
+	p) Push todo list to remote repository
+	s) Setup todo list
+	c) Clear todo list
+	";
+
+	echo "Copyright (C) 2014 John Barbero Unenge"
+}
+
+function add_todo {
+	check_todo_dir;
+	echo "- $1" >> "$TODO_FILE"
+	echo "Added item to local todo list, run todo -p to push list to remote"
+	echo "";
+	show_todo;
+}
+
+function fetch_todo {
+	echo "Fetching todo...";
+	cd "$TODO_DIR";
+	git add .;
+	git commit -m "Update todo list";
+	git push -u origin master;
+	echo "Done!";
+}
+
+function reset_todo {
+	check_todo_dir;
+	
+	echo "Are you sure [Y/N]: ";
+	read ANSWER;
+	case "${ANSWER}" in
+		n|N) echo "Aborting"; exit 0;
+	esac
+
+	echo "Reseting todo list...";
+	cd "$TODO_DIR";
+	git reset --hard;
+	echo "Done!";
+}
+
+function fetch_todo {
+	check_todo_dir;
+	echo "Fetching todos...";
+	cd "$TODO_DIR";
+	git pull --rebase;
+	echo "Done!";
+}
+
+function push_todo {
+	check_todo_dir;
+	echo "Pushing todo...";
+	cd "$TODO_DIR";
+	git add .;
+	git commit -m "Update todo list";
+	git push -u origin master;
+	echo "Done!";
+}
+
+function setup_todo {
+	echo "Setting up todo...";
+	echo "Where to you want to push your todo lists?: ";
+	read TODO_REPO;
+
+	git clone "$TODO_REPO" "$TODO_DIR";
+	echo "Done!";
+}
+
+function show_todo {
+	if [ ! -d "$TODO_DIR" ]; then
+		echo "The folder \"$TODO_DIR\" does not exist, try running \"todo -s\" to setup your todo list";
+		exit 1;
+	elif [ ! -f "$TODO_FILE" ]; then
+		echo "No todos";
+		exit 1;
+	else
+		echo "Todo:";
+		cat "$TODO_FILE";
+	fi
+}
+
+function clear_todo {
+	if [ -f "$TODO_FILE" ]; then
+		rm "$TODO_FILE";
+		touch "$TODO_FILE";
+		echo "Cleared local todo list, run todo -p to push list to remote"
+	fi
+}
+
+OPTERR=0;
+while getopts hrfpsca: option
+do
+	case "${option}" in
+		h) print_help; exit 0;;
+		a) add_todo "$OPTARG"; exit 0;;
+		r) reset_todo; exit 0;;
+		f) fetch_todo; exit 0;;
+		p) push_todo; exit 0;;
+		s) setup_todo; exit 0;;
+		c) clear_todo; exit 0;;
+		:) echo "Option -$OPTARG requires an argument"; exit 1;;
+		\?) echo "Illegal option -$OPTARG"; exit 1;;
+	esac
+done
+
+show_todo;
+exit 0;
+
