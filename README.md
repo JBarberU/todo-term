@@ -13,11 +13,10 @@ It uses git to manage synchronization but can, with a little bit of tweaking, be
 Then run:
 
 ```bash
-todo -s
+$ todo -s
 ```
 
 ## Available commands
-
 	h|help)   Print this help page
 	a|add)    Add an item (will enter interactive mode if no argument is given)
 	t|toggle) Toggle checked state of an item (will enter interactive mode if no argument is given)
