@@ -31,7 +31,14 @@ Usage:
 
 function add_todo {
 	check_todo_dir;
-	echo "- $1" >> "$TODO_FILE"
+	if [ -z $1 ]; then
+		 printf "Item to add: ";
+		 read ITEM;
+	else
+		ITEM="$1";
+	fi
+
+	echo "- $ITEM" >> "$TODO_FILE"
 	echo "Added item to local todo list, run todo -p to push list to remote"
 	echo "";
 	show_todo;
@@ -215,11 +222,11 @@ function clear_todo {
 }
 
 OPTERR=0;
-while getopts htdrfpsca: option
+while getopts htdrfpsca option
 do
 	case "${option}" in
 		h|help) print_help; exit 0;;
-		a|add) add_todo "$OPTARG"; exit 0;;
+		a|add) add_todo "$2"; exit 0;;
 		t|toggle) toggle_todo "$2"; exit 0;;
 		d|delete) delete_todo "$2"; exit 0;;
 		r|reset) reset_todo; exit 0;;
