@@ -234,7 +234,6 @@ do
 		p|push) push_todo; exit 0;;
 		s|setup) setup_todo; exit 0;;
 		c|clear) clear_todo; exit 0;;
-		:) echo "Option -$OPTARG requires an argument"; exit 1;;
 		\?) echo "Illegal option -$OPTARG"; exit 1;;
 	esac
 done
