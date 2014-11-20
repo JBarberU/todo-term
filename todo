@@ -14,14 +14,15 @@ function print_help {
 echo "Welcome to Todo!
 
 Usage:
-	h) Print this help page
-	a) Add item to todo list
-	d) Toggle checked state of item (will enter interactive mode if no argument is given)
-	r) Reset todo list
-	f) Fetch todo list from remote repository
-	p) Push todo list to remote repository
-	s) Setup todo list
-	c) Clear todo list
+	h|help)   Print this help page
+	a|add)    Add an item
+	t|toggle) Toggle checked state of an item (will enter interactive mode if no argument is given)
+	d|delete) Delete an item (will enter interactive mode if no argument is given)
+	r|reset)  Reset todo list
+	f|fetch)  Fetch todo list from remote repository
+	p|push)   Push todo list to remote repository
+	s|setup)  Setup todo list
+	c|clear)  Clear todo list
 	";
 
 	echo "Copyright (C) 2014 John Barbero Unenge"
@@ -35,7 +36,7 @@ function add_todo {
 	show_todo;
 }
 
-function done_todo {
+function toggle_todo {
 	check_todo_dir;
 	local i=1;
 	IFS='
@@ -70,6 +71,44 @@ function done_todo {
 			fi
 		fi
 		echo "$row" >> "$TODO_FILE";
+		((i++));
+	done
+	rm "/tmp/todo.txt"
+
+	echo "";
+	show_todo;
+}
+
+function delete_todo {
+	check_todo_dir;
+	local i=1;
+	IFS='
+	';
+	if [ -z $1 ]; then
+		for row in $(cat "$TODO_FILE"); do
+			echo "$i: $row";
+			((i++));
+		done
+		printf "Item to remove (number): ";
+		read INDEX;
+	else
+		INDEX="$1";	
+	fi
+
+	local re='^[0-9]+$'
+	if ! [[ $INDEX =~ $re ]]; then
+		echo "\"$INDEX\" is not a number!";
+		exit 1;
+	fi
+
+	cp "$TODO_FILE" "/tmp/todo.txt"
+	rm "$TODO_FILE";
+	touch "$TODO_FILE";
+	i=1;
+	for row in $(cat "/tmp/todo.txt"); do
+		if ! [ $i = $INDEX ]; then
+			echo "$row" >> "$TODO_FILE";
+		fi
 		((i++));
 	done
 	rm "/tmp/todo.txt"
@@ -151,17 +190,18 @@ function clear_todo {
 }
 
 OPTERR=0;
-while getopts hdrfpsca: option
+while getopts htdrfpsca: option
 do
 	case "${option}" in
-		h) print_help; exit 0;;
-		a) add_todo "$OPTARG"; exit 0;;
-		d) done_todo "$2"; exit 0;;
-		r) reset_todo; exit 0;;
-		f) fetch_todo; exit 0;;
-		p) push_todo; exit 0;;
-		s) setup_todo; exit 0;;
-		c) clear_todo; exit 0;;
+		h|help) print_help; exit 0;;
+		a|add) add_todo "$OPTARG"; exit 0;;
+		t|toggle) toggle_todo "$2"; exit 0;;
+		d|delete) delete_todo "$2"; exit 0;;
+		r|reset) reset_todo; exit 0;;
+		f|fetch) fetch_todo; exit 0;;
+		p|push) push_todo; exit 0;;
+		s|setup) setup_todo; exit 0;;
+		c|clear) clear_todo; exit 0;;
 		:) echo "Option -$OPTARG requires an argument"; exit 1;;
 		\?) echo "Illegal option -$OPTARG"; exit 1;;
 	esac
