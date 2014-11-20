@@ -16,6 +16,7 @@ echo "Welcome to Todo!
 Usage:
 	h) Print this help page
 	a) Add item to todo list
+	d) Toggle checked state of item (will enter interactive mode if no argument is given)
 	r) Reset todo list
 	f) Fetch todo list from remote repository
 	p) Push todo list to remote repository
@@ -30,6 +31,49 @@ function add_todo {
 	check_todo_dir;
 	echo "- $1" >> "$TODO_FILE"
 	echo "Added item to local todo list, run todo -p to push list to remote"
+	echo "";
+	show_todo;
+}
+
+function done_todo {
+	check_todo_dir;
+	local i=1;
+	IFS='
+	';
+	if [ -z $1 ]; then
+		for row in $(cat "$TODO_FILE"); do
+			echo "$i: $row";
+			((i++));
+		done
+		printf "Item to check as done (number): ";
+		read INDEX;
+	else
+		INDEX="$1";	
+	fi
+
+	local re='^[0-9]+$'
+	if ! [[ $INDEX =~ $re ]]; then
+		echo "\"$INDEX\" is not a number!";
+		exit 1;
+	fi
+
+	cp "$TODO_FILE" "/tmp/todo.txt"
+	rm "$TODO_FILE";
+	touch "$TODO_FILE";
+	i=1;
+	for row in $(cat "/tmp/todo.txt"); do
+		if [ $i = $INDEX ]; then
+			if [ $(echo "$row" | grep -e '^+') ]; then
+				row=$(echo "$row" | sed 's/^+/-/g');
+			else 
+				row=$(echo "$row" | sed 's/^-/+/g');
+			fi
+		fi
+		echo "$row" >> "$TODO_FILE";
+		((i++));
+	done
+	rm "/tmp/todo.txt"
+
 	echo "";
 	show_todo;
 }
@@ -107,11 +151,12 @@ function clear_todo {
 }
 
 OPTERR=0;
-while getopts hrfpsca: option
+while getopts hdrfpsca: option
 do
 	case "${option}" in
 		h) print_help; exit 0;;
 		a) add_todo "$OPTARG"; exit 0;;
+		d) done_todo "$2"; exit 0;;
 		r) reset_todo; exit 0;;
 		f) fetch_todo; exit 0;;
 		p) push_todo; exit 0;;
