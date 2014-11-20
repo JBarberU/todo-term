@@ -2,6 +2,7 @@
 
 TODO_DIR="$HOME/.todo"
 TODO_FILE="$TODO_DIR/todo.txt"
+YES_NO="[Y/N]"
 
 function check_todo_dir {
 	if [ ! -d "$TODO_DIR" ]; then
@@ -54,8 +55,18 @@ function toggle_todo {
 
 	local re='^[0-9]+$'
 	if ! [[ $INDEX =~ $re ]]; then
-		echo "\"$INDEX\" is not a number!";
-		exit 1;
+		i=1;
+		for row in $(cat "$TODO_FILE"); do
+			if [ $(echo "$row" | grep -e "$INDEX") ]; then
+				echo "Found \"$(echo "$row" | sed 's/[+,-] //g')\" at index $i using \"$INDEX\" as a regexp";
+				INDEX=$i;
+			fi
+			((i++));
+		done
+		if ! [[ $INDEX =~ $re ]]; then
+			echo "Unable to do anything useful with $1";
+			exit 1;
+		fi
 	fi
 
 	cp "$TODO_FILE" "/tmp/todo.txt"
@@ -97,8 +108,22 @@ function delete_todo {
 
 	local re='^[0-9]+$'
 	if ! [[ $INDEX =~ $re ]]; then
-		echo "\"$INDEX\" is not a number!";
-		exit 1;
+		i=1;
+		for row in $(cat "$TODO_FILE"); do
+			if [ $(echo "$row" | grep -e "$INDEX") ]; then
+				printf "Found \"$(echo "$row" | sed 's/[+,-] //g')\" at index $i using \"$INDEX\" as a regexp, delete this item? $YES_NO: ";
+				read ANSWER;
+				case ${ANSWER} in
+					n|N) echo "Aborting"; exit 1;
+				esac
+				INDEX=$i;
+			fi
+			((i++));
+		done
+		if ! [[ $INDEX =~ $re ]]; then
+			echo "Unable to do anything useful with $1";
+			exit 1;
+		fi
 	fi
 
 	cp "$TODO_FILE" "/tmp/todo.txt"
@@ -129,7 +154,7 @@ function fetch_todo {
 function reset_todo {
 	check_todo_dir;
 	
-	echo "Are you sure [Y/N]: ";
+	printf "Are you sure $YES_NO: ";
 	read ANSWER;
 	case "${ANSWER}" in
 		n|N) echo "Aborting"; exit 0;
