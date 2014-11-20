@@ -31,7 +31,7 @@ Usage:
 
 function add_todo {
 	check_todo_dir;
-	if [ -z $1 ]; then
+	if [ -z "$1" ]; then
 		 printf "Item to add: ";
 		 read ITEM;
 	else
