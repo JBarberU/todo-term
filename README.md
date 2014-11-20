@@ -4,7 +4,7 @@ todo-term is a todo list utility for the commandline
 
 It uses git to manage synchronization but can, with a little bit of tweaking, be used without it.
 
-To get started:
+## Getting started
 
 - Download todo and put it where it suits you
 - Add todo to your PATH
