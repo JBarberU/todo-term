@@ -61,7 +61,7 @@ function toggle_todo {
 	fi
 
 	local re='^[0-9]+$'
-	if ! [[ $INDEX =~ $re ]]; then
+	if [ ! [ $INDEX =~ $re ]]; then
 		i=1;
 		for row in $(cat "$TODO_FILE"); do
 			if [ $(echo "$row" | grep -e "$INDEX") ]; then
@@ -70,7 +70,7 @@ function toggle_todo {
 			fi
 			((i++));
 		done
-		if ! [[ $INDEX =~ $re ]]; then
+		if [ ! [ $INDEX =~ $re ]]; then
 			echo "Unable to do anything useful with $1";
 			exit 1;
 		fi
@@ -114,7 +114,7 @@ function delete_todo {
 	fi
 
 	local re='^[0-9]+$'
-	if ! [[ $INDEX =~ $re ]]; then
+	if [ ! [ $INDEX =~ $re ]]; then
 		i=1;
 		for row in $(cat "$TODO_FILE"); do
 			if [ $(echo "$row" | grep -e "$INDEX") ]; then
@@ -127,7 +127,7 @@ function delete_todo {
 			fi
 			((i++));
 		done
-		if ! [[ $INDEX =~ $re ]]; then
+		if [ ! [ $INDEX =~ $re ]]; then
 			echo "Unable to do anything useful with $1";
 			exit 1;
 		fi
