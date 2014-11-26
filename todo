@@ -1,8 +1,15 @@
 #!/bin/bash
 
 TODO_DIR="$HOME/.todo"
-TODO_FILE="$TODO_DIR/todo.txt"
+TODO_CONF="$TODO_DIR/todo.conf"
 YES_NO="[Y/N]"
+
+if [ -f "$TODO_CONF" ]; then
+	source "$TODO_CONF";
+else
+	echo "No config file in remote repository, using default values";
+	TODO_FILE="$TODO_DIR/todo.txt";
+fi
 
 function check_todo_dir {
 	if [ ! -d "$TODO_DIR" ]; then
@@ -24,6 +31,7 @@ Usage:
 	p|push)   Push todo list to remote repository
 	s|setup)  Setup todo list
 	c|clear)  Clear todo list
+	l|list)	  List available todos 
 	";
 
 	echo "Copyright (C) 2014 John Barbero Unenge"
@@ -193,10 +201,26 @@ function push_todo {
 
 function setup_todo {
 	echo "Setting up todo...";
-	echo "Where to you want to push your todo lists?: ";
+	printf "Enter a remote to use? (wont make any changes if left blank): ";
 	read TODO_REPO;
 
-	git clone "$TODO_REPO" "$TODO_DIR";
+	if [ ! "$TODO_REPO" = "" ]; then
+		git clone "$TODO_REPO" "$TODO_DIR";
+	fi
+
+	printf "Enter a name for the todo list to use (will use todo.txt if left blank): ";
+	read A_TODO_FILE;
+
+	if [ "$A_TODO_FILE" = "" ]; then
+		A_TODO_FILE="todo.txt";
+	fi
+
+	cp "todo.conf.example" "$TODO_DIR/todo.conf";
+	if [ ! $(grep "todo.conf" "$TODO_CONF") ]; then
+		echo "todo.conf" >> "$TODO_DIR/.gitignore"
+	fi
+	sed -i '' "s,todo_file,$A_TODO_FILE,g" "$TODO_CONF";
+
 	echo "Done!";
 }
 
@@ -221,8 +245,25 @@ function clear_todo {
 	fi
 }
 
+function list_todos {
+	check_todo_dir;
+	local TODOS="$(ls ~/.todo | grep -e '[^todo.conf]')";
+	local TODO_CONF_NAME="$(basename $TODO_FILE)";
+	echo "Available todo lists:";
+	echo "";
+	for t in $TODOS; do
+		printf "\t$t";
+		if [ "$t" = "$TODO_CONF_NAME" ]; then
+			printf " <- current ";
+		fi
+		printf "\n";
+	done
+	echo "";
+	echo "Use \"todo -s\" to change";
+}
+
 OPTERR=0;
-while getopts htdrfpsca option
+while getopts hatdrfpscl option
 do
 	case "${option}" in
 		h|help) print_help; exit 0;;
@@ -234,6 +275,7 @@ do
 		p|push) push_todo; exit 0;;
 		s|setup) setup_todo; exit 0;;
 		c|clear) clear_todo; exit 0;;
+		l|list) list_todos; exit 0;;
 		\?) echo "Illegal option -$OPTARG"; exit 1;;
 	esac
 done
