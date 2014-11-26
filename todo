@@ -3,6 +3,7 @@
 TODO_DIR="$HOME/.todo"
 TODO_CONF="$TODO_DIR/todo.conf"
 YES_NO="[Y/N]"
+TODO_SCRIPT_PATH="$(dirname $0)";
 
 if [ -f "$TODO_CONF" ]; then
 	source "$TODO_CONF";
@@ -69,7 +70,7 @@ function toggle_todo {
 	fi
 
 	local re='^[0-9]+$'
-	if [ ! [ $INDEX =~ $re ]]; then
+	if [[ ! $INDEX =~ $re ]]; then
 		i=1;
 		for row in $(cat "$TODO_FILE"); do
 			if [ $(echo "$row" | grep -e "$INDEX") ]; then
@@ -78,7 +79,7 @@ function toggle_todo {
 			fi
 			((i++));
 		done
-		if [ ! [ $INDEX =~ $re ]]; then
+		if [[ ! $INDEX =~ $re ]]; then
 			echo "Unable to do anything useful with $1";
 			exit 1;
 		fi
@@ -122,7 +123,7 @@ function delete_todo {
 	fi
 
 	local re='^[0-9]+$'
-	if [ ! [ $INDEX =~ $re ]]; then
+	if [[ ! $INDEX =~ $re ]]; then
 		i=1;
 		for row in $(cat "$TODO_FILE"); do
 			if [ $(echo "$row" | grep -e "$INDEX") ]; then
@@ -135,7 +136,7 @@ function delete_todo {
 			fi
 			((i++));
 		done
-		if [ ! [ $INDEX =~ $re ]]; then
+		if [[ ! $INDEX =~ $re ]]; then
 			echo "Unable to do anything useful with $1";
 			exit 1;
 		fi
@@ -193,6 +194,7 @@ function push_todo {
 	check_todo_dir;
 	echo "Pushing todo...";
 	cd "$TODO_DIR";
+	git add -u .;
 	git add .;
 	git commit -m "Update todo list";
 	git push -u origin master;
@@ -215,8 +217,8 @@ function setup_todo {
 		A_TODO_FILE="todo.txt";
 	fi
 
-	cp "todo.conf.example" "$TODO_DIR/todo.conf";
-	if [ ! $(grep "todo.conf" "$TODO_CONF") ]; then
+	cp "$TODO_SCRIPT_PATH/todo.conf.example" "$TODO_DIR/todo.conf";
+	if [ ! $(grep "todo.conf" "$TODO_DIR/.gitignore") ]; then
 		echo "todo.conf" >> "$TODO_DIR/.gitignore"
 	fi
 	sed -i '' "s,todo_file,$A_TODO_FILE,g" "$TODO_CONF";
